@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dietas al Día — Prototipo EPC 28</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F1F3EF;
+    --panel:#FFFFFF;
+    --ink:#1C201F;
+    --ink-soft:#565F5B;
+    --line:#D9DED7;
+    --pine:#1E4A45;
+    --pine-dark:#123330;
+    --brass:#B98B3E;
+    --brass-soft:#F3E6CB;
+    --alert:#B23A2E;
+    --alert-soft:#F7E1DE;
+    --safe:#3F7857;
+    --safe-soft:#E1EEE4;
+    --radius:6px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', -apple-system, Segoe UI, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{ font-family:'Source Serif 4', Georgia, 'Times New Roman', serif; }
+  button{font-family:inherit;}
+  input,select,textarea{font-family:inherit;}
+  ::selection{background:var(--brass-soft);}
+  :focus-visible{outline:2px solid var(--brass); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  /* ---------------- LOGIN GATE ---------------- */
+  #loginGate{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--pine-dark);
+    background-image: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06), transparent 40%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05), transparent 45%);
+    padding:24px;
+  }
+  .login-card{
+    background:var(--panel);
+    border-radius:10px;
+    padding:40px 38px;
+    max-width:400px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 18px 50px rgba(0,0,0,0.25);
+  }
+  .login-card .mark{
+    width:48px;height:48px;
+    border-radius:50%;
+    background:var(--pine);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Source Serif 4', serif;
+    font-size:22px;
+    margin:0 auto 16px;
+  }
+  .login-card h1{ font-size:22px; margin:0 0 6px 0; color:var(--pine-dark); }
+  .login-card p.tag{ font-size:13.5px; color:var(--ink-soft); margin:0 0 26px 0; line-height:1.5; }
+  .google-btn{
+    width:100%;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#fff;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+  }
+  .google-btn:hover{ border-color:var(--pine); }
+  .google-g{
+    width:18px;height:18px;
+    border-radius:50%;
+    background:conic-gradient(from 0deg,#4285F4 0 25%,#34A853 25% 50%,#FBBC05 50% 75%,#EA4335 75% 100%);
+    flex:none;
+  }
+  .login-note{
+    margin-top:18px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.5;
+  }
+
+  /* ---------------- APP SHELL ---------------- */
+  #appShell{ display:none; }
+  #appShell.visible{ display:grid; }
+  .app-shell{
+    grid-template-columns:260px 1fr;
+    min-height:100vh;
+  }
+
+  .sidebar{
+    background:var(--pine);
+    color:#EFEFE9;
+    padding:28px 22px;
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+  }
+  .brand{ display:flex; flex-direction:column; gap:4px; }
+  .brand .mark{
+    width:34px;height:34px;
+    border:1.5px solid #EFEFE9;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Source Serif 4', serif;
+    font-size:16px;
+  }
+  .brand h1{ font-size:20px; margin:10px 0 0 0; line-height:1.15; font-weight:600; }
+  .brand p{ margin:2px 0 0 0; font-size:12.5px; color:#B9CFC9; }
+
+  nav.primary-nav{ display:flex; flex-direction:column; gap:2px; }
+  nav.primary-nav button{
+    all:unset; cursor:pointer;
+    padding:10px 12px; border-radius:var(--radius);
+    font-size:14.5px; color:#DCE7E3;
+    display:flex; align-items:center; gap:10px;
+  }
+  nav.primary-nav button:hover{ background:rgba(255,255,255,0.08); }
+  nav.primary-nav button.active{ background:#EFEFE9; color:var(--pine-dark); font-weight:600; }
+  nav.primary-nav .dot{ width:6px;height:6px;border-radius:50%; background:currentColor;opacity:0.55;flex:none; }
+
+  .subnav{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+  .subnav button{
+    all:unset; cursor:pointer;
+    padding:7px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:600;
+    border:1px solid var(--line);
+    color:var(--ink-soft);
+    background:var(--panel);
+  }
+  .subnav button:hover{ border-color:var(--pine); color:var(--pine); }
+  .subnav button.active{ background:var(--pine); border-color:var(--pine); color:#fff; }
+
+  .patient-context-card{
+    margin-top:auto; border-top:1px solid rgba(255,255,255,0.16);
+    padding-top:18px; display:none; flex-direction:column; gap:8px;
+  }
+  .patient-context-card.visible{ display:flex; }
+  .patient-context-card .label{ font-size:11px; color:#9FC3BA; }
+  .patient-context-card .name{ font-family:'Source Serif 4', serif; font-size:16px; }
+  .patient-context-card .row{ font-size:12.5px; color:#CBE0DA; display:flex; justify-content:space-between; gap:8px; }
+  .patient-context-card .allergy-tags{ display:flex;flex-wrap:wrap;gap:6px;margin-top:2px; }
+  .allergy-tag{
+    font-size:11.5px; padding:2px 8px; border-radius:20px;
+    background:rgba(178,58,46,0.28); color:#FBD9D4; border:1px solid rgba(178,58,46,0.55);
+  }
+  .patient-context-card button.change-patient{
+    all:unset; cursor:pointer; font-size:12.5px; color:var(--brass); text-decoration:underline; margin-top:4px;
+  }
+
+  .doctor-chip{
+    border-top:1px solid rgba(255,255,255,0.16);
+    padding-top:16px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .doctor-chip .who{ display:flex; align-items:center; gap:10px; }
+  .doctor-chip .avatar{
+    width:30px;height:30px;border-radius:50%;
+    background:var(--brass); color:#2A2109; font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .doctor-chip .name{ font-size:13.5px; font-weight:600; color:#EFEFE9; }
+  .doctor-chip .email{ font-size:11.5px; color:#9FC3BA; }
+  .doctor-chip button.logout{
+    all:unset; cursor:pointer; font-size:12px; color:var(--brass); text-decoration:underline; margin-top:2px; align-self:flex-start;
+  }
+
+  /* ---------------- MAIN ---------------- */
+  main{ padding:38px 46px 60px; max-width:960px; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .view-header{ margin-bottom:26px; }
+  .view-header .eyebrow{ font-size:13px; color:var(--ink-soft); margin:0 0 6px 0; }
+  .view-header h2{ font-size:28px; margin:0; font-weight:600; color:var(--pine-dark); }
+  .view-header .sub{ margin:8px 0 0 0; max-width:66ch; color:var(--ink-soft); font-size:15px; line-height:1.5; }
+
+  .guide-block{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:22px 24px; margin-bottom:16px;
+  }
+  .guide-block h3{ font-size:16.5px; margin:0 0 10px 0; color:var(--pine-dark); }
+  .guide-block p{ margin:0 0 10px 0; line-height:1.6; font-size:14.5px; color:var(--ink); }
+  .guide-block ul{ margin:0; padding-left:20px; line-height:1.7; font-size:14.5px; }
+  .ca-item{ display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14.5px; }
+  .ca-item:last-child{ border-bottom:none; }
+  .ca-item .ca-code{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--brass); padding-top:2px; flex:none; width:36px; }
+  .story-quote{
+    border-left:3px solid var(--brass); padding:4px 0 4px 16px; margin:0 0 12px 0;
+    font-style:italic; color:var(--pine-dark); font-size:14.5px; line-height:1.6;
+  }
+  .scope-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:720px){ .scope-grid{ grid-template-columns:1fr; } }
+  .scope-col h4{ font-size:13px; margin:0 0 8px 0; color:var(--ink-soft); }
+  .scope-col ul{ margin:0; padding-left:18px; font-size:14px; line-height:1.7; }
+
+  .rf-tag{
+    display:inline-block; font-family:'IBM Plex Mono', monospace; font-size:11px;
+    color:var(--pine); background:var(--safe-soft); border-radius:4px; padding:1px 6px; margin-right:6px;
+  }
+
+  .search-row{ display:flex; gap:10px; margin-bottom:18px; align-items:center; }
+  .search-row input{
+    flex:1; padding:11px 14px; border:1px solid var(--line); border-radius:var(--radius);
+    font-size:14.5px; background:var(--panel); color:var(--ink);
+  }
+  .search-row input:focus{ border-color:var(--pine); }
+  .btn-primary{
+    padding:11px 18px; border:none; border-radius:var(--radius);
+    background:var(--pine); color:#fff; font-size:14px; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  .btn-primary:hover{ background:var(--pine-dark); }
+
+  .list-row{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:10px; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    transition:border-color 0.15s ease;
+  }
+  .list-row:hover{ border-color:var(--pine); }
+  .list-row .who .name{ font-family:'Source Serif 4', serif; font-size:17px; margin:0 0 3px 0; }
+  .list-row .who .meta{ font-size:13px; color:var(--ink-soft); line-height:1.5; max-width:56ch; }
+  .list-row .allergy-preview{ font-size:12px; color:var(--alert); margin-top:5px; }
+  .list-row .go{ font-size:13px; color:var(--pine); font-weight:600; flex:none; }
+
+  .context-bar{
+    background:var(--panel); border:1px solid var(--line); border-left:4px solid var(--pine); border-radius:var(--radius);
+    padding:16px 20px; display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:22px; flex-wrap:wrap; gap:12px;
+  }
+  .context-bar .who .name{ font-family:'Source Serif 4', serif; font-size:19px; margin:0 0 2px 0; }
+  .context-bar .who .disease{ font-size:13.5px; color:var(--ink-soft); }
+  .context-bar .timer{ text-align:right; }
+  .context-bar .timer .label{ font-size:11px; color:var(--ink-soft); margin-bottom:2px; }
+  .context-bar .timer .value{ font-family:'IBM Plex Mono', monospace; font-size:20px; color:var(--safe); }
+  .context-bar .timer .value.over{ color:var(--alert); }
+
+  .diet-row{
+    background:var(--panel); border:1px solid var(--line); border-left:5px solid var(--safe); border-radius:var(--radius);
+    padding:16px 18px; margin-bottom:12px; cursor:pointer;
+    display:flex; justify-content:space-between; gap:16px; align-items:flex-start;
+  }
+  .diet-row.moderada{ border-left-color:var(--brass); }
+  .diet-row.contraindicada{ border-left-color:var(--alert); }
+  .diet-row:hover{ box-shadow:0 0 0 1px var(--pine) inset; }
+  .diet-row .diet-name{ font-family:'Source Serif 4', serif; font-size:17.5px; margin:0 0 5px 0; }
+  .diet-row .diet-ind{ font-size:13.5px; color:var(--ink-soft); line-height:1.5; max-width:50ch; }
+  .diet-row .diet-flags{ font-size:12.5px; color:var(--alert); margin-top:6px; }
+  .status-pill{ flex:none; font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:20px; white-space:nowrap; text-align:center; }
+  .status-pill.safe{ background:var(--safe-soft); color:var(--safe); }
+  .status-pill.brass{ background:var(--brass-soft); color:#7A5A1E; }
+  .status-pill.alert{ background:var(--alert-soft); color:var(--alert); }
+  .score-sub{ display:block; font-size:10.5px; font-weight:500; margin-top:2px; opacity:0.85; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(18,51,48,0.28); opacity:0; pointer-events:none; transition:opacity 0.2s ease; z-index:20; }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+  .drawer{
+    position:fixed; top:0; right:0; bottom:0; width:min(460px, 92vw);
+    background:var(--panel); box-shadow:-8px 0 24px rgba(0,0,0,0.12);
+    transform:translateX(100%); transition:transform 0.28s cubic-bezier(.4,0,.2,1);
+    z-index:21; display:flex; flex-direction:column;
+  }
+  .drawer.open{ transform:translateX(0); }
+  .drawer-head{ padding:22px 24px 16px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .drawer-head h3{ font-size:20px; margin:0 0 4px 0; }
+  .drawer-head .for-patient{ font-size:12.5px; color:var(--ink-soft); }
+  .drawer-close{ all:unset; cursor:pointer; font-size:22px; line-height:1; color:var(--ink-soft); padding:2px 6px; }
+  .drawer-body{ padding:18px 24px; overflow-y:auto; flex:1; }
+  .drawer-body dl{ margin:0 0 18px 0; }
+  .drawer-body dt{ font-size:11.5px; color:var(--ink-soft); margin-top:12px; }
+  .drawer-body dd{ margin:2px 0 0 0; font-size:14.5px; line-height:1.5; }
+  .drawer-body dd ul{ margin:0; padding-left:18px; }
+  .drawer-body dd li{ margin-bottom:3px; }
+  .component-list{ margin:0; padding-left:18px; }
+  .component-list li{ margin-bottom:4px; font-size:14.5px; }
+  .component-list li.flagged-alergia{ color:var(--alert); font-weight:600; list-style:none; margin-left:-18px; }
+  .component-list li.flagged-alergia::before{ content:"⚠ "; }
+  .component-list li.flagged-incomp{ color:#7A5A1E; font-weight:600; list-style:none; margin-left:-18px; }
+  .component-list li.flagged-incomp::before{ content:"◐ "; }
+  .alert-callout{
+    background:var(--alert-soft); border:1px solid #E3B6AF; border-radius:var(--radius);
+    padding:14px 16px; margin:14px 0; font-size:14px; color:#7A2A21; line-height:1.5;
+  }
+  .alert-callout strong{ display:block; margin-bottom:4px; }
+  .moderate-callout{
+    background:var(--brass-soft); border:1px solid #E2C888; border-radius:var(--radius);
+    padding:14px 16px; margin:14px 0; font-size:14px; color:#6B4E14; line-height:1.5;
+  }
+  .moderate-callout strong{ display:block; margin-bottom:4px; }
+  .safe-callout{
+    background:var(--safe-soft); border:1px solid #BEDBC7; border-radius:var(--radius);
+    padding:12px 16px; margin:14px 0; font-size:14px; color:#245139;
+  }
+  .ack-row{ display:flex; align-items:flex-start; gap:9px; margin:14px 0 4px; font-size:13.5px; line-height:1.4; }
+  .ack-row input{ margin-top:3px; }
+  .drawer-foot{ padding:16px 24px 22px; border-top:1px solid var(--line); }
+  .btn-confirm{
+    width:100%; padding:13px; border:none; border-radius:var(--radius);
+    background:var(--pine); color:#fff; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  .btn-confirm:disabled{ background:#C7CEC9; color:#8B948E; cursor:not-allowed; }
+  .btn-confirm:not(:disabled):hover{ background:var(--pine-dark); }
+
+  .success-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:40px 34px; text-align:center; max-width:460px; margin:20px auto 0;
+  }
+  .success-card .check{
+    width:52px;height:52px; border-radius:50%; background:var(--safe-soft); color:var(--safe);
+    display:flex;align-items:center;justify-content:center; font-size:26px; margin:0 auto 16px;
+  }
+  .success-card h3{ margin:0 0 8px 0; font-size:20px; }
+  .success-card p{ margin:0 0 4px 0; color:var(--ink-soft); font-size:14.5px; }
+  .success-card .elapsed{ font-family:'IBM Plex Mono', monospace; color:var(--pine); font-weight:600; }
+  .btn-secondary{
+    margin-top:20px; padding:10px 20px; border:1px solid var(--pine); background:none; color:var(--pine);
+    border-radius:var(--radius); font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .btn-secondary:hover{ background:var(--pine); color:#fff; }
+  .back-link{ all:unset; cursor:pointer; font-size:13.5px; color:var(--pine); font-weight:600; margin-bottom:16px; display:inline-block; }
+
+  /* ---- Patient form ---- */
+  .form-card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:24px; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:720px){ .form-grid{ grid-template-columns:1fr; } }
+  .form-field{ display:flex; flex-direction:column; gap:6px; }
+  .form-field.span2{ grid-column:1 / -1; }
+  .form-field label{ font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+  .form-field input, .form-field select{
+    padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius); font-size:14px; background:#fff; color:var(--ink);
+  }
+  .form-field input:focus, .form-field select:focus{ border-color:var(--pine); }
+  .form-hint{ font-size:11.5px; color:var(--ink-soft); }
+  .form-actions{ margin-top:22px; display:flex; gap:10px; }
+
+  @media (max-width:820px){
+    .app-shell{ grid-template-columns:1fr; }
+    .sidebar{
+      flex-direction:row; align-items:center; justify-content:space-between;
+      flex-wrap:nowrap; gap:10px; padding:10px 14px;
+    }
+    .brand{ flex-direction:row; align-items:center; gap:8px; flex:none; }
+    .brand .mark{ width:26px; height:26px; font-size:12px; }
+    .brand h1{ font-size:15px; margin:0; }
+    .brand p{ display:none; }
+    nav.primary-nav{
+      flex-direction:row; flex:1; min-width:0; gap:4px;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+    }
+    nav.primary-nav button{ padding:6px 10px; font-size:12.5px; white-space:nowrap; flex:none; }
+    nav.primary-nav .dot{ display:none; }
+    .patient-context-card{ display:none !important; }
+    .doctor-chip{
+      flex:none; border-top:none; padding-top:0; margin-top:0;
+      flex-direction:row; align-items:center; gap:0;
+    }
+    .doctor-chip .name, .doctor-chip .email{ display:none; }
+    .doctor-chip .avatar{ width:26px; height:26px; font-size:12px; }
+    .doctor-chip button.logout{ font-size:10.5px; margin-top:0; white-space:nowrap; margin-left:6px; }
+    main{ padding:20px 16px 50px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN GATE ================= -->
+<div id="loginGate">
+  <div class="login-card">
+    <div class="mark">D</div>
+    <h1>Dietas al Día</h1>
+    <p class="tag">Plataforma clínica de apoyo a la decisión nutricional. Acceso exclusivo para médicos del Departamento de Nutrición registrados con cuenta institucional.</p>
+    <button class="google-btn" id="googleLoginBtn"><span class="google-g"></span> Continuar con Google</button>
+    <p class="login-note">Inicio de sesión simulado para efectos de este prototipo. En el sistema final, solo se permite el acceso a usuarios autenticados con una cuenta de Google verificada.</p>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="appShell">
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="mark">D</div>
+      <div>
+        <h1>Dietas al Día</h1>
+        <p>Departamento de Nutrición</p>
+      </div>
+    </div>
+
+    <nav class="primary-nav">
+      <button data-view="guide" class="active"><span class="dot"></span>Guía del prototipo</button>
+      <button data-view="catalogs"><span class="dot"></span>Catálogos</button>
+      <button data-view="patients"><span class="dot"></span>Pacientes</button>
+    </nav>
+
+    <div class="patient-context-card" id="sidebarPatientCard">
+      <div class="label">Paciente en consulta</div>
+      <div class="name" id="sbName">—</div>
+      <div class="row"><span id="sbDisease">—</span></div>
+      <div class="allergy-tags" id="sbAllergies"></div>
+      <button class="change-patient" id="changePatientBtn">Cambiar de paciente</button>
+    </div>
+
+    <div class="doctor-chip" id="doctorChip">
+      <div class="who">
+        <div class="avatar" id="doctorAvatar">D</div>
+        <div>
+          <div class="name" id="doctorName">—</div>
+          <div class="email" id="doctorEmail">—</div>
+        </div>
+      </div>
+      <button class="logout" id="logoutBtn">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- ================= GUIDE VIEW ================= -->
+    <section class="view active" id="view-guide">
+      <div class="view-header">
+        <p class="eyebrow">U3A2 · Ingeniería de Requisitos · Prototipado</p>
+        <h2>Objetivo y alcance del prototipo</h2>
+        <p class="sub">Prototipo funcional de alta fidelidad construido para validar el requisito EPC 28 del caso "Dietas al Día", y ampliado para reflejar el resto del sistema (RF1–RF6) y un motor de apoyo a la decisión clínica, en línea con el prototipo de referencia compartido por el profesor.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>Objetivo del prototipo</h3>
+        <p>Permitir que un médico del Departamento de Nutrición identifique las dietas compatibles con el diagnóstico de un paciente, señalando de forma inequívoca cualquier alimento incompatible con sus alergias registradas — sin tener que cruzar manualmente la historia clínica con el catálogo de dietas. El requisito EPC 28 se mantiene como el eje validado de este entregable; el resto de módulos se incluye para dar contexto de sistema completo.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>Requisito priorizado — EPC 28: Asignación de tratamiento nutricional</h3>
+        <p class="story-quote">Como médico del Departamento de Nutrición quiero consultar las dietas compatibles con el diagnóstico de un paciente, señalando explícitamente si alguna dieta contiene alimentos incompatibles con sus alergias registradas, para elegir con seguridad un tratamiento sin cruzar manualmente la historia clínica con el catálogo de dietas.</p>
+
+        <div class="ca-item"><span class="ca-code">CA1</span><span>Dado un paciente con una enfermedad registrada, el sistema muestra las dietas asociadas en un único paso.</span></div>
+        <div class="ca-item"><span class="ca-code">CA2</span><span>Si una dieta recomendada incluye un alimento alérgeno o incompatible del paciente, el sistema lo señala de forma inequívoca antes de confirmar.</span></div>
+        <div class="ca-item"><span class="ca-code">CA3</span><span>El médico accede a la ficha técnica completa de la dieta sin perder el contexto del paciente.</span></div>
+        <div class="ca-item"><span class="ca-code">CA4</span><span>Un usuario nuevo elige una dieta segura en menos de 90 segundos sin pasar por alto ninguna alerta.</span></div>
+      </div>
+
+      <div class="guide-block">
+        <h3>Ampliación de alcance — módulos incorporados</h3>
+        <p>Además del flujo de validación de EPC 28, este prototipo incorpora los siguientes módulos, inspirados en el prototipo de referencia del profesor:</p>
+        <p><span class="rf-tag">RF1–RF3</span>Catálogos de consulta de alimentos, nutrientes y vitaminas/minerales.</p>
+        <p><span class="rf-tag">RF4</span>Catálogo de dietas prediseñadas con ficha técnica completa.</p>
+        <p><span class="rf-tag">RF5</span>Catálogo de enfermedades nutricionales (causas, diagnosis, tratamiento).</p>
+        <p><span class="rf-tag">RF6</span>Historia clínica de pacientes, incluyendo registro de un paciente nuevo.</p>
+        <p><span class="rf-tag">Motor de decisión</span>El módulo de EPC 28 ahora evalúa <em>todas</em> las dietas del catálogo frente a cada paciente (no solo las de su enfermedad registrada), calculando un nivel de idoneidad (Alta / Moderada / Contraindicada) a partir de alergias, incompatibilidades y coincidencia con el diagnóstico — igual que hace el motor de decisión del prototipo de referencia, aunque con una lógica de puntuación simplificada.</p>
+      </div>
+
+      <div class="guide-block">
+        <h3>Diseño de la solución</h3>
+        <div class="scope-grid">
+          <div class="scope-col">
+            <h4>Este prototipo sí simula</h4>
+            <ul>
+              <li>Inicio de sesión simulado exclusivo para médicos (caso límite del caso de negocio)</li>
+              <li>Consulta de los 5 catálogos del sistema (alimentos, nutrientes, vitaminas/minerales, dietas, enfermedades)</li>
+              <li>Registro de un paciente nuevo con su historia clínica básica</li>
+              <li>Evaluación automática de todas las dietas contra el paciente, con score de idoneidad y alertas inequívocas (CA1–CA2)</li>
+              <li>Ficha técnica completa sin perder el contexto del paciente (CA3)</li>
+              <li>Cronómetro de consulta y bloqueo de confirmación ante alertas críticas (CA4)</li>
+            </ul>
+          </div>
+          <div class="scope-col">
+            <h4>Este prototipo no incluye</h4>
+            <ul>
+              <li>Persistencia real en base de datos (los datos viven solo en memoria del navegador)</li>
+              <li>Autenticación real con Google ni control de roles</li>
+              <li>Edición o eliminación de elementos de los catálogos (solo consulta y alta de pacientes)</li>
+              <li>Integración con sistemas externos de laboratorio</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CATALOGS VIEW ================= -->
+    <section class="view" id="view-catalogs">
+      <div class="view-header">
+        <p class="eyebrow">RF1 – RF5</p>
+        <h2>Catálogos del sistema</h2>
+        <p class="sub">Consulta de referencia de los catálogos que alimentan el motor de decisión clínica. En este prototipo son de solo lectura.</p>
+      </div>
+      <div class="subnav" id="catalogSubnav">
+        <button data-cat="alimentos" class="active">Alimentos</button>
+        <button data-cat="nutrientes">Nutrientes</button>
+        <button data-cat="vitaminas">Vitaminas y minerales</button>
+        <button data-cat="dietas">Dietas</button>
+        <button data-cat="enfermedades">Enfermedades</button>
+      </div>
+      <div id="catalogList"></div>
+    </section>
+
+    <!-- ================= PATIENTS LIST VIEW ================= -->
+    <section class="view" id="view-patients">
+      <div class="view-header">
+        <p class="eyebrow">RF6 · Historia clínica</p>
+        <h2>Pacientes</h2>
+        <p class="sub">Selecciona un paciente para evaluar su tratamiento, o registra uno nuevo.</p>
+      </div>
+
+      <div class="search-row">
+        <input type="text" id="patientSearch" placeholder="Buscar por nombre o documento…">
+        <button class="btn-primary" id="newPatientBtn">+ Nuevo paciente</button>
+      </div>
+
+      <div id="patientList"></div>
+    </section>
+
+    <!-- ================= NEW PATIENT VIEW ================= -->
+    <section class="view" id="view-newpatient">
+      <button class="back-link" id="backToPatientsFromForm">← Volver a pacientes</button>
+      <div class="view-header">
+        <p class="eyebrow">RF6 · Registro</p>
+        <h2>Registrar paciente nuevo</h2>
+        <p class="sub">Los campos marcados son los mínimos necesarios para que el motor de decisión pueda evaluar dietas para este paciente.</p>
+      </div>
+
+      <div class="form-card">
+        <form id="patientForm">
+          <div class="form-grid">
+            <div class="form-field"><label>Nombre completo *</label><input type="text" id="fNombre" required placeholder="Ej. Ana Torres"></div>
+            <div class="form-field"><label>Documento de identidad *</label><input type="text" id="fDocumento" required placeholder="CC 00.000.000"></div>
+            <div class="form-field"><label>Edad (años) *</label><input type="number" id="fEdad" required min="0" max="120"></div>
+            <div class="form-field"><label>Sexo</label>
+              <select id="fSexo"><option>Femenino</option><option>Masculino</option><option>Otro</option></select>
+            </div>
+            <div class="form-field"><label>Peso (kg) *</label><input type="number" id="fPeso" required min="1" step="0.1"></div>
+            <div class="form-field"><label>Talla (cm) *</label><input type="number" id="fTalla" required min="1"></div>
+            <div class="form-field span2"><label>Diagnóstico nutricional *</label>
+              <select id="fDiagnostico" required></select>
+              <span class="form-hint">Se toma del catálogo de enfermedades nutricionales (RF5).</span>
+            </div>
+            <div class="form-field span2"><label>Alergias registradas</label>
+              <input type="text" id="fAlergias" placeholder="Separadas por coma. Ej. Maní, Mariscos">
+            </div>
+            <div class="form-field span2"><label>Incompatibilidades digestivas</label>
+              <input type="text" id="fIncompatibilidades" placeholder="Separadas por coma. Ej. Lactosa">
+            </div>
+            <div class="form-field span2"><label>Antecedentes familiares</label>
+              <input type="text" id="fAntecedentes" placeholder="Separados por coma. Ej. Padre con diabetes tipo 2">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">Registrar y evaluar dietas</button>
+            <button type="button" class="btn-secondary" id="cancelNewPatient">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ================= DIAGNOSIS / DIET LIST VIEW ================= -->
+    <section class="view" id="view-diagnosis">
+      <button class="back-link" id="backToPatients">← Volver a pacientes</button>
+
+      <div class="context-bar">
+        <div class="who">
+          <div class="name" id="ctxName">—</div>
+          <div class="disease" id="ctxDisease">—</div>
+        </div>
+        <div class="timer">
+          <div class="label">Tiempo de consulta</div>
+          <div class="value" id="ctxTimer">00:00</div>
+        </div>
+      </div>
+
+      <div class="view-header" style="margin-bottom:14px;">
+        <h2 style="font-size:20px;">Evaluación de dietas para este paciente</h2>
+        <p class="sub">Todas las dietas del catálogo, evaluadas automáticamente contra el diagnóstico, alergias e incompatibilidades del paciente y ordenadas por idoneidad clínica.</p>
+      </div>
+
+      <div id="dietList"></div>
+    </section>
+
+    <!-- ================= SUCCESS VIEW ================= -->
+    <section class="view" id="view-success">
+      <div class="success-card">
+        <div class="check">✓</div>
+        <h3>Tratamiento asignado</h3>
+        <p id="successText">—</p>
+        <p>Tiempo total de la consulta: <span class="elapsed" id="successElapsed">00:00</span></p>
+        <button class="btn-secondary" id="successBack">Atender otro paciente</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div>
+      <h3 id="drawerTitle">—</h3>
+      <div class="for-patient" id="drawerSubtitle">—</div>
+    </div>
+    <button class="drawer-close" id="drawerClose" aria-label="Cerrar">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+
+<script>
+(function(){
+  // =====================================================================
+  // DATA — CATÁLOGOS (RF1–RF5)
+  // =====================================================================
+  const foods = [
+    { id:'f1', nombre:'Maní', definicion:'Semilla oleaginosa de la familia de las leguminosas, rica en grasas insaturadas.', origen:'Vegetal', funcionalidad:'Fuente de grasas saludables y proteína vegetal.', alergenos:['Maní'] },
+    { id:'f2', nombre:'Mariscos', definicion:'Grupo de crustáceos y moluscos comestibles de origen marino.', origen:'Marino', funcionalidad:'Fuente de proteína completa y yodo.', alergenos:['Mariscos'] },
+    { id:'f3', nombre:'Trigo (pan integral)', definicion:'Cereal integral molido, base de panes y harinas integrales.', origen:'Vegetal', funcionalidad:'Fuente de carbohidratos complejos y fibra insoluble.', alergenos:['Gluten'] },
+    { id:'f4', nombre:'Pescado azul', definicion:'Pescado con alto contenido de grasa, como salmón, atún o sardina.', origen:'Marino', funcionalidad:'Fuente principal de ácidos grasos omega-3.', alergenos:[] },
+    { id:'f5', nombre:'Arroz', definicion:'Cereal de grano, base de la alimentación en numerosas culturas.', origen:'Vegetal', funcionalidad:'Fuente de carbohidratos de fácil digestión, libre de gluten.', alergenos:[] },
+    { id:'f6', nombre:'Quinua', definicion:'Pseudocereal andino de alto valor proteico.', origen:'Vegetal', funcionalidad:'Proteína vegetal completa, libre de gluten.', alergenos:[] },
+    { id:'f7', nombre:'Lácteos descremados', definicion:'Derivados lácteos con contenido graso reducido.', origen:'Animal', funcionalidad:'Fuente de calcio y proteína de alto valor biológico.', alergenos:['Lactosa'] },
+    { id:'f8', nombre:'Vegetales de hoja verde', definicion:'Hortalizas de hoja como espinaca, acelga o kale.', origen:'Vegetal', funcionalidad:'Fuente de fibra, folato y antioxidantes.', alergenos:[] },
+    { id:'f9', nombre:'Legumbres', definicion:'Semillas comestibles de leguminosas como lenteja, garbanzo o fríjol.', origen:'Vegetal', funcionalidad:'Fuente de proteína vegetal y fibra soluble.', alergenos:[] },
+    { id:'f10', nombre:'Frutas frescas', definicion:'Frutas de temporada consumidas en su estado natural.', origen:'Vegetal', funcionalidad:'Fuente de vitaminas, minerales y fibra.', alergenos:[] }
+  ];
+
+  const nutrients = [
+    { id:'n1', nombre:'Fibra dietética', definicion:'Componente de origen vegetal no digerible por enzimas humanas.', funcionalidad:'Regula el tránsito intestinal y modera la absorción de glucosa.', tipo:'Macronutriente', subtipo:'Carbohidrato no digerible', enfermedades:['Estreñimiento','Dislipidemia'], fuentes:['Avena','Legumbres','Vegetales de hoja verde'] },
+    { id:'n2', nombre:'Ácidos grasos Omega-3', definicion:'Grasas poliinsaturadas esenciales que el cuerpo no sintetiza por sí solo.', funcionalidad:'Efecto antiinflamatorio y protector cardiovascular.', tipo:'Macronutriente', subtipo:'Grasa poliinsaturada', enfermedades:['Enfermedad cardiovascular'], fuentes:['Pescado azul','Frutos secos'] },
+    { id:'n3', nombre:'Sodio', definicion:'Mineral esencial para el balance de líquidos del organismo.', funcionalidad:'Regula el balance hídrico y la presión arterial.', tipo:'Micronutriente', subtipo:'Macromineral', enfermedades:['Hiponatremia'], fuentes:['Sal de mesa','Embutidos'] },
+    { id:'n4', nombre:'Potasio', definicion:'Mineral que actúa junto al sodio en el equilibrio electrolítico.', funcionalidad:'Contrarresta los efectos del sodio y regula la contracción muscular.', tipo:'Micronutriente', subtipo:'Macromineral', enfermedades:['Arritmias'], fuentes:['Plátano','Vegetales de hoja verde'] },
+    { id:'n5', nombre:'Vitamina D', definicion:'Vitamina liposoluble sintetizada con la exposición solar.', funcionalidad:'Favorece la absorción intestinal de calcio.', tipo:'Micronutriente', subtipo:'Vitamina liposoluble', enfermedades:['Osteoporosis'], fuentes:['Pescado azul','Exposición solar'] }
+  ];
+
+  const vitamins = [
+    { id:'v1', nombre:'Vitamina D', clasificacion:'Vitamina liposoluble', funciones:['Salud ósea','Modulación del sistema inmune'], rdr:'600–800 UI/día', fuentes:['Pescado azul','Huevo','Exposición solar'] },
+    { id:'v2', nombre:'Calcio', clasificacion:'Macromineral', funciones:['Salud ósea y dental','Contracción muscular'], rdr:'1000 mg/día', fuentes:['Lácteos descremados','Vegetales de hoja verde'] },
+    { id:'v3', nombre:'Hierro', clasificacion:'Oligoelemento', funciones:['Transporte de oxígeno en la sangre'], rdr:'8–18 mg/día', fuentes:['Carnes rojas','Legumbres'] },
+    { id:'v4', nombre:'Ácido fólico (Vitamina B9)', clasificacion:'Vitamina hidrosoluble', funciones:['Síntesis de ADN','Prevención de anemia megaloblástica'], rdr:'400 mcg/día', fuentes:['Vegetales de hoja verde','Legumbres'] }
+  ];
+
+  const diseases = [
+    { id:'e1', nombre:'Diabetes tipo 2', causas:'Resistencia progresiva a la insulina asociada a factores genéticos y de estilo de vida.', diagnosis:'Glucemia en ayunas ≥126 mg/dl o HbA1c ≥6.5%.', diferenciales:['Diabetes tipo 1','Síndrome metabólico'], tratamiento:'Control glucémico mediante dieta, actividad física y, si es necesario, farmacoterapia.', objetivo:'Mantener HbA1c por debajo de 7%.', contraindicados:['Azúcares refinados','Harinas blancas'], nutrientesRecomendados:['Fibra dietética'] },
+    { id:'e2', nombre:'Hipertensión arterial', causas:'Predisposición genética, exceso de sodio en la dieta y sedentarismo.', diagnosis:'Presión arterial sistólica ≥140 mmHg o diastólica ≥90 mmHg de forma sostenida.', diferenciales:['Hipertensión secundaria de origen renal'], tratamiento:'Reducción de sodio, control de peso y actividad física regular.', objetivo:'Mantener presión arterial por debajo de 130/80 mmHg.', contraindicados:['Embutidos','Sal añadida'], nutrientesRecomendados:['Potasio'] },
+    { id:'e3', nombre:'Enfermedad celíaca', causas:'Reacción autoinmune permanente frente al gluten.', diagnosis:'Serología de anticuerpos antitransglutaminasa, confirmada con biopsia duodenal.', diferenciales:['Sensibilidad al gluten no celíaca'], tratamiento:'Dieta estricta sin gluten de por vida.', objetivo:'Remisión de síntomas y recuperación de la mucosa intestinal.', contraindicados:['Trigo','Cebada','Centeno'], nutrientesRecomendados:['Ácido fólico (Vitamina B9)'] }
+  ];
+
+  const diets = [
+    {
+      id:'d1', nombre:'Dieta Baja en Carbohidratos',
+      indicaciones:'Control glucémico en diabetes tipo 2 mediante restricción de carbohidratos simples.',
+      patologiasIndicadas:['Diabetes tipo 2'],
+      definicion:'Plan nutricional que limita el aporte de carbohidratos a menos del 30% del valor calórico total, priorizando proteínas y grasas saludables.',
+      calorias:'1500–1700 kcal/día',
+      macros:{ proteinas:30, grasas:40, carbohidratos:30 },
+      componentes:['Vegetales de hoja verde','Proteína magra','Maní','Aceite de oliva'],
+      contraindicaciones:['Enfermedad renal crónica avanzada'],
+      ingesta:'5 comidas pequeñas al día', via:'Oral', duracion:'8 semanas, con reevaluación',
+      dosificacion:'Distribución de carbohidratos: 45 g por comida principal',
+      pauta:'Evitar azúcares refinados; monitoreo de glucosa pre y post prandial',
+      suplementos:['Complejo B','Magnesio']
+    },
+    {
+      id:'d2', nombre:'Dieta Mediterránea Controlada',
+      indicaciones:'Manejo cardiometabólico mediante grasas insaturadas y granos integrales.',
+      patologiasIndicadas:['Diabetes tipo 2','Hipertensión arterial'],
+      definicion:'Patrón alimentario basado en aceite de oliva, pescado azul, legumbres y cereales integrales, con bajo contenido de sodio y grasas saturadas.',
+      calorias:'1800–2000 kcal/día',
+      macros:{ proteinas:20, grasas:35, carbohidratos:45 },
+      componentes:['Trigo (pan integral)','Aceite de oliva','Pescado azul','Legumbres'],
+      contraindicaciones:[],
+      ingesta:'3 comidas + 2 meriendas', via:'Oral', duracion:'12 semanas',
+      dosificacion:'Sodio máximo 2 g/día',
+      pauta:'Sustituir grasas saturadas por insaturadas de forma progresiva',
+      suplementos:['Omega 3 si el aporte de pescado es bajo']
+    },
+    {
+      id:'d3', nombre:'Dieta DASH',
+      indicaciones:'Reducción de presión arterial mediante control de sodio y aumento de potasio, calcio y magnesio.',
+      patologiasIndicadas:['Hipertensión arterial'],
+      definicion:'Enfoque dietético rico en frutas, verduras y lácteos bajos en grasa, con restricción estricta de sodio.',
+      calorias:'1600–2000 kcal/día',
+      macros:{ proteinas:20, grasas:30, carbohidratos:50 },
+      componentes:['Vegetales de hoja verde','Frutas frescas','Lácteos descremados','Legumbres'],
+      contraindicaciones:[],
+      ingesta:'3 comidas + 1 merienda', via:'Oral', duracion:'10 semanas',
+      dosificacion:'Sodio máximo 1.5 g/día',
+      pauta:'Registro diario de presión arterial',
+      suplementos:['Potasio, solo si hay indicación médica']
+    },
+    {
+      id:'d4', nombre:'Dieta Sin Gluten Estricta',
+      indicaciones:'Manejo nutricional de enfermedad celíaca mediante exclusión total de gluten.',
+      patologiasIndicadas:['Enfermedad celíaca'],
+      definicion:'Plan de eliminación completa de trigo, cebada y centeno, basado en fuentes naturales de carbohidratos libres de gluten.',
+      calorias:'1700–1900 kcal/día',
+      macros:{ proteinas:25, grasas:30, carbohidratos:45 },
+      componentes:['Arroz','Quinua','Proteína magra','Vegetales de hoja verde','Frutas frescas'],
+      contraindicaciones:[],
+      ingesta:'3 comidas + 2 meriendas', via:'Oral', duracion:'Permanente, con seguimiento trimestral',
+      dosificacion:'No aplica',
+      pauta:'Verificar etiquetado "libre de gluten" en todos los productos',
+      suplementos:['Hierro','Ácido fólico','Vitamina D']
+    }
+  ];
+
+  // =====================================================================
+  // DATA — PACIENTES (RF6)
+  // =====================================================================
+  let patients = [
+    { id:'p1', nombre:'María Restrepo', edad:52, documento:'CC 43.219.884', sexo:'Femenino', pesoKg:78, tallaCm:160, diagnostico:'Diabetes tipo 2', alergias:['Maní','Mariscos'], incompatibilidades:[], antecedentes:['Padre con diabetes tipo 2'] },
+    { id:'p2', nombre:'Carlos Peña', edad:61, documento:'CC 71.556.302', sexo:'Masculino', pesoKg:90, tallaCm:175, diagnostico:'Hipertensión arterial', alergias:[], incompatibilidades:[], antecedentes:['Madre con hipertensión arterial'] },
+    { id:'p3', nombre:'Luisa Gómez', edad:34, documento:'CC 1.036.789.221', sexo:'Femenino', pesoKg:58, tallaCm:165, diagnostico:'Enfermedad celíaca', alergias:['Gluten'], incompatibilidades:['Lactosa'], antecedentes:['Hermana con enfermedad celíaca'] }
+  ];
+
+  // =====================================================================
+  // UTILIDADES
+  // =====================================================================
+  function normalize(t){
+    if(!t) return '';
+    return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  }
+  function computeIMC(pesoKg, tallaCm){
+    const m = tallaCm/100;
+    return Math.round((pesoKg/(m*m))*10)/10;
+  }
+  function imcClasificacion(imc){
+    if(imc < 18.5) return 'Bajo peso';
+    if(imc < 25) return 'Normopeso';
+    if(imc < 30) return 'Sobrepeso';
+    return 'Obesidad';
+  }
+
+  // =====================================================================
+  // MOTOR DE DECISIÓN (evalúa TODAS las dietas contra un paciente)
+  // =====================================================================
+  function evaluateDiet(patient, diet){
+    let score = 55;
+    const conflictosAlergia = [];
+    const conflictosIncompatibilidad = [];
+    const beneficios = [];
+    let critico = false;
+
+    // 1. Alergias e incompatibilidades vs. componentes de la dieta
+    diet.componentes.forEach(compName=>{
+      const food = foods.find(f => normalize(compName).includes(normalize(f.nombre)) || normalize(f.nombre).includes(normalize(compName)));
+      if(!food) return;
+      (food.alergenos||[]).forEach(alergeno=>{
+        const alergenoNorm = normalize(alergeno);
+        if(patient.alergias.some(a => normalize(a) === alergenoNorm)){
+          conflictosAlergia.push({ alergeno, alimento: food.nombre });
+          score -= 40; critico = true;
+        } else if(patient.incompatibilidades.some(a => normalize(a) === alergenoNorm)){
+          conflictosIncompatibilidad.push({ alergeno, alimento: food.nombre });
+          score -= 20;
+        }
+      });
+    });
+
+    // 2. Coincidencia con el diagnóstico del paciente
+    const patDiagNorm = normalize(patient.diagnostico);
+    const matched = (diet.patologiasIndicadas||[]).some(p => normalize(p) === patDiagNorm);
+    if(matched){ score += 25; beneficios.push(`Indicación terapéutica prioritaria para "${patient.diagnostico}".`); }
+
+    // 3. Ajuste biométrico simple (IMC alto + dieta controlada en carbohidratos)
+    const imc = computeIMC(patient.pesoKg, patient.tallaCm);
+    if(imc >= 30 && diet.macros.carbohidratos <= 40){
+      score += 10; beneficios.push(`Perfil de macronutrientes (${diet.macros.carbohidratos}% CHO) favorable para IMC ${imc}.`);
+    }
+
+    let finalScore = Math.min(100, Math.max(10, score));
+    let idoneidad = 'Idoneidad Moderada';
+    if(critico){
+      idoneidad = 'Contraindicada';
+      finalScore = Math.min(finalScore, 25);
+    } else if(finalScore >= 75 && matched){
+      idoneidad = 'Alta Idoneidad';
+    } else if(finalScore < 50 || conflictosIncompatibilidad.length){
+      idoneidad = 'Idoneidad Moderada';
+    } else {
+      idoneidad = 'Idoneidad Moderada';
+    }
+
+    return { diet, score: finalScore, idoneidad, conflictosAlergia, conflictosIncompatibilidad, beneficios, matched };
+  }
+
+  function rankDietsForPatient(patient){
+    return diets.map(d => evaluateDiet(patient, d)).sort((a,b)=>{
+      const rank = { 'Alta Idoneidad':0, 'Idoneidad Moderada':1, 'Contraindicada':2 };
+      if(rank[a.idoneidad] !== rank[b.idoneidad]) return rank[a.idoneidad] - rank[b.idoneidad];
+      return b.score - a.score;
+    });
+  }
+
+  // =====================================================================
+  // LOGIN GATE
+  // =====================================================================
+  const loginGate = document.getElementById('loginGate');
+  const appShell = document.getElementById('appShell');
+  const doctor = { nombre:'Dra. Camila Herrera', email:'camila.herrera@upb.edu.co' };
+
+  document.getElementById('googleLoginBtn').addEventListener('click', ()=>{
+    document.getElementById('doctorName').textContent = doctor.nombre;
+    document.getElementById('doctorEmail').textContent = doctor.email;
+    document.getElementById('doctorAvatar').textContent = doctor.nombre.replace('Dra. ','').charAt(0);
+    loginGate.style.display = 'none';
+    appShell.classList.add('visible');
+  });
+  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+    appShell.classList.remove('visible');
+    loginGate.style.display = 'flex';
+    activePatient = null;
+    document.getElementById('sidebarPatientCard').classList.remove('visible');
+    showView('guide');
+  });
+
+  // =====================================================================
+  // NAV
+  // =====================================================================
+  let activePatient = null;
+  let timerStart = null;
+  let timerInterval = null;
+
+  const navButtons = document.querySelectorAll('.primary-nav button');
+  navButtons.forEach(btn=> btn.addEventListener('click', ()=> showView(btn.dataset.view)));
+
+  function showView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target = document.getElementById('view-' + name);
+    if(target) target.classList.add('active');
+    navButtons.forEach(b=> b.classList.toggle('active', b.dataset.view === name));
+  }
+
+  // =====================================================================
+  // CATALOGS VIEW (RF1–RF5)
+  // =====================================================================
+  const catalogList = document.getElementById('catalogList');
+  const catalogSubnav = document.getElementById('catalogSubnav');
+  let currentCatalog = 'alimentos';
+
+  catalogSubnav.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentCatalog = btn.dataset.cat;
+      catalogSubnav.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+      renderCatalog();
+    });
+  });
+
+  function renderCatalog(){
+    catalogList.innerHTML = '';
+    const renderers = {
+      alimentos: () => foods.map(f => ({
+        title:f.nombre, meta:`${f.origen} · ${f.funcionalidad}`,
+        alertLine: f.alergenos.length ? `Alérgeno: ${f.alergenos.join(', ')}` : '',
+        onOpen: ()=> openCatalogDrawer('Alimento', f.nombre, [
+          ['Definición', f.definicion], ['Origen', f.origen], ['Funcionalidad principal', f.funcionalidad],
+          ['Alérgenos', f.alergenos.length ? f.alergenos.join(', ') : 'Ninguno registrado']
+        ])
+      })),
+      nutrientes: () => nutrients.map(n => ({
+        title:n.nombre, meta:`${n.tipo} · ${n.subtipo}`,
+        onOpen: ()=> openCatalogDrawer('Nutriente', n.nombre, [
+          ['Definición', n.definicion], ['Funcionalidad', n.funcionalidad], ['Tipo', n.tipo], ['Subtipo', n.subtipo],
+          ['Enfermedades por déficit', n.enfermedades.join(', ')], ['Fuentes alimentarias', n.fuentes.join(', ')]
+        ])
+      })),
+      vitaminas: () => vitamins.map(v => ({
+        title:v.nombre, meta:`${v.clasificacion} · RDR: ${v.rdr}`,
+        onOpen: ()=> openCatalogDrawer('Vitamina / mineral', v.nombre, [
+          ['Clasificación', v.clasificacion], ['Funciones asociadas', v.funciones.join(', ')],
+          ['Ración dietética recomendada', v.rdr], ['Fuentes principales', v.fuentes.join(', ')]
+        ])
+      })),
+      dietas: () => diets.map(d => ({
+        title:d.nombre, meta:d.indicaciones,
+        onOpen: ()=> openCatalogDrawer('Dieta prediseñada', d.nombre, [
+          ['Indicaciones', d.indicaciones], ['Patologías indicadas', d.patologiasIndicadas.join(', ')],
+          ['Definición técnica', d.definicion], ['Aporte calórico', d.calorias],
+          ['Componentes', d.componentes.join(', ')], ['Contraindicaciones formales', d.contraindicaciones.join(', ') || 'Ninguna registrada'],
+          ['Ingesta necesaria', d.ingesta], ['Vía de administración', d.via], ['Duración', d.duracion],
+          ['Dosificación', d.dosificacion], ['Pauta', d.pauta], ['Suplementos', d.suplementos.join(', ')]
+        ])
+      })),
+      enfermedades: () => diseases.map(e => ({
+        title:e.nombre, meta:e.diagnosis,
+        onOpen: ()=> openCatalogDrawer('Enfermedad nutricional', e.nombre, [
+          ['Causas', e.causas], ['Diagnosis', e.diagnosis], ['Diagnósticos diferenciales', e.diferenciales.join(', ')],
+          ['Tratamiento', e.tratamiento], ['Objetivo del tratamiento', e.objetivo],
+          ['Alimentos contraindicados', e.contraindicados.join(', ')], ['Nutrientes recomendados', e.nutrientesRecomendados.join(', ')]
+        ])
+      }))
+    };
+    const rows = renderers[currentCatalog]();
+    rows.forEach(r=>{
+      const row = document.createElement('div');
+      row.className = 'list-row';
+      row.tabIndex = 0;
+      row.innerHTML = `
+        <div class="who">
+          <p class="name">${r.title}</p>
+          <p class="meta">${r.meta}</p>
+          ${r.alertLine ? `<p class="allergy-preview">${r.alertLine}</p>` : ''}
+        </div>
+        <div class="go">Ver ficha →</div>
+      `;
+      row.addEventListener('click', r.onOpen);
+      catalogList.appendChild(row);
+    });
+  }
+
+  function openCatalogDrawer(type, title, fields){
+    document.getElementById('drawerTitle').textContent = title;
+    document.getElementById('drawerSubtitle').textContent = type;
+    const body = document.getElementById('drawerBody');
+    body.innerHTML = '<dl>' + fields.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('') + '</dl>';
+    document.getElementById('drawerFoot').innerHTML = '';
+    openDrawerRaw();
+  }
+
+  // =====================================================================
+  // PATIENTS LIST (RF6)
+  // =====================================================================
+  const patientListEl = document.getElementById('patientList');
+  const searchInput = document.getElementById('patientSearch');
+
+  function renderPatients(filter){
+    const f = (filter || '').toLowerCase();
+    patientListEl.innerHTML = '';
+    patients
+      .filter(p => p.nombre.toLowerCase().includes(f) || p.documento.toLowerCase().includes(f))
+      .forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'list-row';
+        card.tabIndex = 0;
+        card.innerHTML = `
+          <div class="who">
+            <p class="name">${p.nombre}</p>
+            <p class="meta">${p.edad} años · ${p.documento} · ${p.diagnostico}</p>
+            ${p.alergias.length ? `<p class="allergy-preview">Alergias registradas: ${p.alergias.join(', ')}</p>` : `<p class="allergy-preview" style="color:var(--ink-soft);">Sin alergias registradas</p>`}
+          </div>
+          <div class="go">Ver dietas →</div>
+        `;
+        card.addEventListener('click', ()=> openPatient(p));
+        patientListEl.appendChild(card);
+      });
+  }
+  searchInput.addEventListener('input', ()=> renderPatients(searchInput.value));
+  document.getElementById('newPatientBtn').addEventListener('click', ()=>{
+    diseases.forEach(d=>{}); // no-op, keep select populated below
+    const sel = document.getElementById('fDiagnostico');
+    sel.innerHTML = diseases.map(d=>`<option value="${d.nombre}">${d.nombre}</option>`).join('');
+    document.getElementById('patientForm').reset();
+    showView('newpatient');
+  });
+  document.getElementById('backToPatientsFromForm').addEventListener('click', ()=> showView('patients'));
+  document.getElementById('cancelNewPatient').addEventListener('click', ()=> showView('patients'));
+
+  document.getElementById('patientForm').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const nuevo = {
+      id: 'p' + Date.now(),
+      nombre: document.getElementById('fNombre').value.trim(),
+      documento: document.getElementById('fDocumento').value.trim(),
+      edad: parseInt(document.getElementById('fEdad').value, 10),
+      sexo: document.getElementById('fSexo').value,
+      pesoKg: parseFloat(document.getElementById('fPeso').value),
+      tallaCm: parseFloat(document.getElementById('fTalla').value),
+      diagnostico: document.getElementById('fDiagnostico').value,
+      alergias: document.getElementById('fAlergias').value.split(',').map(s=>s.trim()).filter(Boolean),
+      incompatibilidades: document.getElementById('fIncompatibilidades').value.split(',').map(s=>s.trim()).filter(Boolean),
+      antecedentes: document.getElementById('fAntecedentes').value.split(',').map(s=>s.trim()).filter(Boolean)
+    };
+    patients.unshift(nuevo);
+    renderPatients('');
+    openPatient(nuevo); // arranca el cronómetro inmediatamente — demuestra CA4 con un usuario/paciente nuevo
+  });
+
+  // =====================================================================
+  // PATIENT CONTEXT + TIMER
+  // =====================================================================
+  function openPatient(p){
+    activePatient = p;
+    document.getElementById('sbName').textContent = p.nombre;
+    document.getElementById('sbDisease').textContent = p.diagnostico;
+    const tagsEl = document.getElementById('sbAllergies');
+    const allTags = [...p.alergias.map(a=>a+' (alergia)'), ...p.incompatibilidades.map(a=>a+' (incompatibilidad)')];
+    tagsEl.innerHTML = allTags.length
+      ? allTags.map(a=>`<span class="allergy-tag">${a}</span>`).join('')
+      : '<span class="allergy-tag" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.2);color:#CBE0DA;">Sin alergias ni incompatibilidades</span>';
+    document.getElementById('sidebarPatientCard').classList.add('visible');
+
+    const imc = computeIMC(p.pesoKg, p.tallaCm);
+    document.getElementById('ctxName').textContent = p.nombre;
+    document.getElementById('ctxDisease').textContent = `${p.edad} años · ${p.diagnostico} · IMC ${imc} (${imcClasificacion(imc)})`;
+
+    renderDietRanking(p);
+    startTimer();
+    showView('diagnosis');
+  }
+
+  document.getElementById('changePatientBtn').addEventListener('click', ()=>{ stopTimer(); showView('patients'); });
+  document.getElementById('backToPatients').addEventListener('click', ()=>{ stopTimer(); showView('patients'); });
+
+  function startTimer(){
+    stopTimer();
+    timerStart = Date.now();
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+  }
+  function stopTimer(){ if(timerInterval) clearInterval(timerInterval); timerInterval = null; }
+  function updateTimer(){
+    const secs = Math.floor((Date.now() - timerStart) / 1000);
+    const mm = String(Math.floor(secs/60)).padStart(2,'0');
+    const ss = String(secs % 60).padStart(2,'0');
+    const el = document.getElementById('ctxTimer');
+    el.textContent = `${mm}:${ss}`;
+    el.classList.toggle('over', secs > 90);
+  }
+  function elapsedString(){
+    const secs = Math.floor((Date.now() - timerStart) / 1000);
+    const mm = String(Math.floor(secs/60)).padStart(2,'0');
+    const ss = String(secs % 60).padStart(2,'0');
+    return `${mm}:${ss}`;
+  }
+
+  // =====================================================================
+  // DIET RANKING (CA1 + CA2, ahora sobre TODO el catálogo de dietas)
+  // =====================================================================
+  const dietListEl = document.getElementById('dietList');
+
+  function statusMeta(idoneidad){
+    if(idoneidad === 'Alta Idoneidad') return { cls:'safe', label:'Alta idoneidad' };
+    if(idoneidad === 'Contraindicada') return { cls:'alert', label:'Contraindicada' };
+    return { cls:'brass', label:'Idoneidad moderada' };
+  }
+
+  function renderDietRanking(patient){
+    const ranking = rankDietsForPatient(patient);
+    dietListEl.innerHTML = '';
+    ranking.forEach(ev=>{
+      const meta = statusMeta(ev.idoneidad);
+      const rowClass = ev.idoneidad === 'Contraindicada' ? 'contraindicada' : (ev.idoneidad === 'Idoneidad Moderada' ? 'moderada' : '');
+      const flags = [];
+      ev.conflictosAlergia.forEach(c => flags.push(`Alergia a ${c.alergeno} (contiene ${c.alimento})`));
+      ev.conflictosIncompatibilidad.forEach(c => flags.push(`Incompatibilidad con ${c.alergeno} (contiene ${c.alimento})`));
+
+      const row = document.createElement('div');
+      row.className = 'diet-row ' + rowClass;
+      row.tabIndex = 0;
+      row.innerHTML = `
+        <div>
+          <p class="diet-name">${ev.diet.nombre}</p>
+          <p class="diet-ind">${ev.diet.indicaciones}</p>
+          ${flags.length ? `<p class="diet-flags">⚠ ${flags.join(' · ')}</p>` : ''}
+        </div>
+        <div class="status-pill ${meta.cls}">${meta.label}<span class="score-sub">Score ${ev.score}/100</span></div>
+      `;
+      row.addEventListener('click', ()=> openDietDrawer(ev, patient));
+      dietListEl.appendChild(row);
+    });
+  }
+
+  // =====================================================================
+  // DRAWER — FICHA TÉCNICA DE DIETA (CA3 + CA4)
+  // =====================================================================
+  function openDietDrawer(ev, patient){
+    const diet = ev.diet;
+    document.getElementById('drawerTitle').textContent = diet.nombre;
+    document.getElementById('drawerSubtitle').textContent = `Ficha técnica · para ${patient.nombre}`;
+
+    const alergenoNames = ev.conflictosAlergia.map(c=>c.alergeno);
+    const incompNames = ev.conflictosIncompatibilidad.map(c=>c.alergeno);
+
+    const componentesHtml = diet.componentes.map(c=>{
+      const cNorm = normalize(c);
+      const isAlergia = ev.conflictosAlergia.some(cf => cNorm.includes(normalize(cf.alimento)));
+      const isIncomp = ev.conflictosIncompatibilidad.some(cf => cNorm.includes(normalize(cf.alimento)));
+      let cls = ''; let suffix = '';
+      if(isAlergia){ cls='flagged-alergia'; suffix=' — alergia registrada del paciente'; }
+      else if(isIncomp){ cls='flagged-incomp'; suffix=' — incompatibilidad digestiva registrada'; }
+      return `<li class="${cls}">${c}${suffix}</li>`;
+    }).join('');
+
+    let calloutHtml = '';
+    if(ev.conflictosAlergia.length){
+      calloutHtml = `<div class="alert-callout"><strong>Contraindicada — riesgo de alergia</strong>Esta dieta contiene ${alergenoNames.join(' y ')}, registrado como alergia de ${patient.nombre}. No debe confirmarse sin reconocer esta alerta.</div>`;
+    } else if(ev.conflictosIncompatibilidad.length){
+      calloutHtml = `<div class="moderate-callout"><strong>Idoneidad moderada — incompatibilidad digestiva</strong>Esta dieta contiene ${incompNames.join(' y ')}, registrado como incompatibilidad de ${patient.nombre}. Puede generar molestias; revisar antes de confirmar.</div>`;
+    } else {
+      calloutHtml = `<div class="safe-callout">Sin alergias ni incompatibilidades detectadas para ${patient.nombre}. ${ev.matched ? 'Además, coincide directamente con su diagnóstico registrado.' : ''}</div>`;
+    }
+
+    document.getElementById('drawerBody').innerHTML = `
+      ${calloutHtml}
+      <dl>
+        <dt>Nivel de idoneidad</dt><dd>${ev.idoneidad} (score ${ev.score}/100)</dd>
+        <dt>Objetivo / indicaciones</dt><dd>${diet.indicaciones}</dd>
+        <dt>Definición técnica</dt><dd>${diet.definicion}</dd>
+        <dt>Aporte calórico</dt><dd>${diet.calorias}</dd>
+        <dt>Componentes básicos</dt><dd><ul class="component-list">${componentesHtml}</ul></dd>
+        <dt>Ingesta necesaria</dt><dd>${diet.ingesta}</dd>
+        <dt>Vía de administración</dt><dd>${diet.via}</dd>
+        <dt>Duración</dt><dd>${diet.duracion}</dd>
+        <dt>Dosificación</dt><dd>${diet.dosificacion}</dd>
+        <dt>Pauta</dt><dd>${diet.pauta}</dd>
+        <dt>Suplementos necesarios</dt><dd>${diet.suplementos.join(', ')}</dd>
+      </dl>
+    `;
+
+    const foot = document.getElementById('drawerFoot');
+    if(ev.conflictosAlergia.length){
+      foot.innerHTML = `
+        <label class="ack-row">
+          <input type="checkbox" id="ackCheck">
+          <span>Confirmo que revisé la alerta de alergia y aun así deseo continuar.</span>
+        </label>
+        <button class="btn-confirm" id="confirmBtn" disabled>Confirmar tratamiento</button>
+      `;
+      document.getElementById('ackCheck').addEventListener('change', e=>{
+        document.getElementById('confirmBtn').disabled = !e.target.checked;
+      });
+    } else {
+      foot.innerHTML = `<button class="btn-confirm" id="confirmBtn">Confirmar tratamiento</button>`;
+    }
+    document.getElementById('confirmBtn').addEventListener('click', ()=> confirmTreatment(diet, patient));
+
+    openDrawerRaw();
+  }
+
+  function openDrawerRaw(){
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawer').setAttribute('aria-hidden','false');
+  }
+  function closeDrawer(){
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawer').setAttribute('aria-hidden','true');
+  }
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+  document.getElementById('overlay').addEventListener('click', closeDrawer);
+
+  function confirmTreatment(diet, patient){
+    const elapsed = elapsedString();
+    document.getElementById('successText').textContent = `${diet.nombre} asignada a ${patient.nombre}.`;
+    document.getElementById('successElapsed').textContent = elapsed;
+    closeDrawer();
+    stopTimer();
+    showView('success');
+  }
+
+  document.getElementById('successBack').addEventListener('click', ()=>{
+    activePatient = null;
+    document.getElementById('sidebarPatientCard').classList.remove('visible');
+    showView('patients');
+  });
+
+  // =====================================================================
+  // INIT
+  // =====================================================================
+  renderPatients('');
+  renderCatalog();
+})();
+</script>
+</body>
+</html>
